@@ -18,7 +18,13 @@ sys.path.insert(0, str(CORE_DIR))
 
 from core_engine import analyze_url, get_gambling_warning   # main fn + warning helper
 from database import initialize_database                      # called once at startup
-
+from fastapi import FastAPI
+ 
+app = FastAPI()
+ 
+@app.get("/")
+def read_root():
+    return {"Python": "on Vercel"}
 
 def ensure_db_ready():
     """
