@@ -132,7 +132,9 @@ html, body, [class*="css"] {
     font-size: 0.9rem;
     margin-bottom: 1rem;
 }
-
+div[data-testid="stTextInput"] input::placeholder { color: #6a7090 !important; opacity: 1 !important; }
+div[data-testid="stTextInput"] input::-webkit-input-placeholder { color: #6a7090 !important; opacity: 1 !important; }
+div[data-testid="stTextInput"] input::-moz-placeholder { color: #6a7090 !important; opacity: 1 !important; }
 /* ── input override ──────────────────────────────────────────── */
 div[data-testid="stTextInput"] input {
     background: #13131f !important;
