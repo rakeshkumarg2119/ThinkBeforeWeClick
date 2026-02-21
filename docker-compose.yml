@@ -1,0 +1,113 @@
+version: "3.9"
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  URL Risk Analyzer — Docker Compose
+#
+#  Services:
+#    backend   → FastAPI on port 8000
+#    frontend  → Streamlit on port 8501
+#    trainer   → One-shot model training job (runs and exits)
+#
+#  Usage:
+#    First time (trains model, then starts both servers):
+#      docker-compose --profile train up --build
+#
+#    Normal start (skips training, uses existing model files):
+#      docker-compose up --build
+#
+#    Background (detached):
+#      docker-compose up --build -d
+#
+#    Stop everything:
+#      docker-compose down
+#
+#    Wipe database + models and start fresh:
+#      docker-compose down -v
+# ═══════════════════════════════════════════════════════════════════════════
+
+services:
+
+  # ─────────────────────────────────────────────────────────────
+  # BACKEND — FastAPI + Core Engine
+  # ─────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: url-risk-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist SQLite database across container restarts/rebuilds
+      - db_data:/app/db
+      # Persist trained ML model .pkl files across restarts/rebuilds
+      - model_data:/app/models
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  # ─────────────────────────────────────────────────────────────
+  # FRONTEND — Streamlit UI
+  # ─────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: url-risk-frontend
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      # ⚠️  IMPORTANT: In Docker, "localhost" inside the frontend
+      # container refers to the frontend container itself — NOT the
+      # backend container. We use the service name "backend" instead.
+      # Your frontend/app.py must read this env var (see note below).
+      - API_BASE=http://backend:8000/api/v1
+    depends_on:
+      backend:
+        condition: service_healthy   # waits for backend /health to return 200
+
+  # ─────────────────────────────────────────────────────────────
+  # TRAINER — One-shot training job (optional, profile: train)
+  # ─────────────────────────────────────────────────────────────
+  # This service runs train_model.py once, then exits.
+  # It shares the same db_data and model_data volumes as the backend
+  # so models trained here are immediately available to the backend.
+  #
+  # Run ONLY when you want to (re)train:
+  #   docker-compose --profile train run --rm trainer
+  # ─────────────────────────────────────────────────────────────
+  trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: url-risk-trainer
+    profiles:
+      - train                        # only runs with --profile train
+    volumes:
+      - db_data:/app/db
+      - model_data:/app/models
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Override the CMD from Dockerfile — run training script instead of uvicorn
+    command: ["python", "train_model.py"]
+    # No restart — it runs once and exits
+    restart: "no"
+
+# ─────────────────────────────────────────────────────────────────
+# NAMED VOLUMES
+# ─────────────────────────────────────────────────────────────────
+# These live outside the container filesystem so data survives
+# docker-compose down and docker-compose up --build cycles.
+# To delete them: docker-compose down -v
+volumes:
+  db_data:
+    driver: local
+  model_data:
+    driver: local

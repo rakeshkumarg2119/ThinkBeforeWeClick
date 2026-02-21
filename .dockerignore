@@ -1,0 +1,52 @@
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+
+# ── Virtual environments ───────────────────────────────────────
+venv/
+env/
+ENV/
+.venv/
+.env
+
+# ── IDE / Editor ───────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Git ────────────────────────────────────────────────────────
+.git/
+.gitignore
+
+# ── OS files ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Test / Dev only scripts ────────────────────────────────────
+# Don't copy training scripts into production image — run them
+# via the trainer service (docker-compose --profile train)
+train_model.py
+verify_model.py
+frontend_patch.py
+
+# ── SQLite DB — managed via Docker volume, not baked into image ─
+db/
+
+# ── Model .pkl files — managed via Docker volume ───────────────
+# Comment out if you want to bake pre-trained models into the image
+models/
+
+# ── Logs ───────────────────────────────────────────────────────
+*.log
+
+# ── Jupyter ────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Dev container ──────────────────────────────────────────────
+.devcontainer/

@@ -1,0 +1,35 @@
+# ═══════════════════════════════════════════════════════════════
+# Dockerfile.frontend — Streamlit UI
+# ═══════════════════════════════════════════════════════════════
+# Build context: project root
+# Runs: streamlit on port 8501
+# ═══════════════════════════════════════════════════════════════
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# ── Python deps ────────────────────────────────────────────────
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt streamlit
+
+# ── Only copy frontend source ──────────────────────────────────
+COPY frontend/ ./frontend/
+
+# ── Non-root user ──────────────────────────────────────────────
+RUN useradd -m -u 1001 appuser && chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 8501
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+# ── Start Streamlit ─────────────────────────────────────────────
+# API_BASE env var is set in docker-compose.yml so the frontend
+# can reach the backend container by its service name, not localhost.
+CMD ["streamlit", "run", "frontend/app.py", \
+     "--server.port=8501", \
+     "--server.address=0.0.0.0", \
+     "--server.enableCORS=false", \
+     "--server.enableXsrfProtection=false"]
