@@ -8,11 +8,11 @@ import streamlit as st
 import requests
 import json
 import time
-
+import os
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-API_BASE = "http://localhost:8000/api/v1"
+API_BASE = os.environ.get("API_BASE", "http://localhost:8000/api/v1")
 ANALYZE_ENDPOINT = f"{API_BASE}/analyze"
 HEALTH_ENDPOINT  = f"{API_BASE}/health"
 REQUEST_TIMEOUT  = 15   # seconds — generous for redirect checking
