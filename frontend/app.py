@@ -237,7 +237,7 @@ def call_analyze_api(url: str) -> dict:
 # ---------------------------------------------------------------------------
 st.markdown("""
 <div class="hero">
-    <h1>🛡️ URL Risk Analyzer</h1>
+    <h1>🛡️ ThinkBeforeYouClick</h1>
     <p>AI-powered threat detection · Phishing · Malware · Scams · Piracy · Gambling</p>
 </div>
 """, unsafe_allow_html=True)
