@@ -21,7 +21,7 @@ REQUEST_TIMEOUT  = 15   # seconds — generous for redirect checking
 # Page config — must be first Streamlit call
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="URL Risk Analyzer",
+    page_title="ThinkBeforeYouClick",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="collapsed",
